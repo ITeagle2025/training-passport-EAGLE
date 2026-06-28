@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Trainer — TrainPass</title>
+  <link rel="stylesheet" href="../css/main.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+
+<header class="topnav">
+  <div class="topnav-inner">
+    <div class="nav-brand">
+      <svg viewBox="0 0 48 48" fill="none" aria-hidden="true"><rect x="4" y="4" width="40" height="40" rx="10" fill="var(--accent)"/><path d="M14 16h20M14 24h14M14 32h8" stroke="white" stroke-width="2.5" stroke-linecap="round"/><circle cx="36" cy="30" r="8" fill="white" fill-opacity="0.3"/><path d="M33 30l2 2 4-4" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>TrainPass</span>
+    </div>
+    <nav class="nav-tabs" role="tablist">
+      <button class="nav-tab active" data-panel="sessions"   role="tab" aria-selected="true">Sessions</button>
+      <button class="nav-tab"        data-panel="attendance" role="tab" aria-selected="false" style="display:none">Log Attendance</button>
+      <button class="nav-tab"        data-panel="topics"     role="tab" aria-selected="false">Topics</button>
+      <button class="nav-tab"        data-panel="logs"       role="tab" aria-selected="false">Logs</button>
+    </nav>
+    <div class="nav-user">
+      <span class="role-badge role-trainer">Trainer</span>
+      <span id="navUsername" class="nav-username"></span>
+      <button class="btn-icon" id="logoutBtn" title="Sign out" aria-label="Sign out">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="dashboard-main">
+
+  <!-- SESSIONS -->
+  <section id="panel-sessions" class="panel active">
+    <div class="panel-header">
+      <div><h2>Training Sessions</h2><p class="panel-sub">Click <strong>Log Attendance</strong> on a session card to check in attendees.</p></div>
+      <button class="btn btn-primary" id="openCreateSession">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        New Session
+      </button>
+    </div>
+    <div class="filter-bar">
+      <select id="filterType" class="select-sm">
+        <option value="">All types</option>
+        <option value="Training">Training</option>
+        <option value="Seminar">Seminar</option>
+        <option value="Webinar">Webinar</option>
+        <option value="Theoretical">Theoretical</option>
+        <option value="Practical">Practical</option>
+      </select>
+      <select id="filterLocation" class="select-sm">
+        <option value="">All locations</option>
+        <option value="Training Room">Training Room</option>
+        <option value="Field">Field</option>
+        <option value="Online">Online</option>
+        <option value="Other">Other</option>
+      </select>
+      <select id="filterStatus" class="select-sm">
+        <option value="">All statuses</option>
+        <option value="Scheduled" selected>Scheduled</option>
+        <option value="Completed">Completed</option>
+      </select>
+      <input type="date" id="filterDateFrom" class="select-sm" title="From date"/>
+      <input type="date" id="filterDateTo"   class="select-sm" title="To date"/>
+      <button class="btn btn-ghost btn-sm" id="applyFilters">Apply</button>
+    </div>
+    <div id="sessionsGrid" class="sessions-grid">
+      <div class="skeleton-grid"><div class="skeleton-card"></div><div class="skeleton-card"></div><div class="skeleton-card"></div></div>
+    </div>
+  </section>
+
+  <!-- ATTENDANCE (hidden nav tab — opened from session card) -->
+  <section id="panel-attendance" class="panel">
+    <div class="panel-header">
+      <div>
+        <h2>Log Attendance</h2>
+        <p class="panel-sub">Scan or type employee number to check in. Add new employees on the spot.</p>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <button class="btn btn-ghost btn-sm" id="backToSessionsBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="width:14px;height:14px"><polyline points="15 18 9 12 15 6"/></svg>
+          Back to Sessions
+        </button>
+        <button class="btn btn-ghost" id="attendMarkCompleteBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="width:15px;height:15px"><polyline points="20 6 9 17 4 12"/></svg>
+          Mark Session Complete
+        </button>
+      </div>
+    </div>
+
+    <div class="attendance-layout">
+
+      <!-- Active Session Info (read-only — set by goToAttendance) -->
+      <div class="card mb-4">
+        <div class="card-head"><h3>Active Session</h3></div>
+        <div class="card-body">
+          <div id="activeSessionInfo" style="font-size:15px;font-weight:600;color:var(--text);padding:6px 0">
+            <span style="color:var(--text-muted)">No session selected</span>
+          </div>
+          <!-- hidden input keeps the session ID -->
+          <input type="hidden" id="attendSessionPick" value=""/>
+        </div>
+      </div>
+
+      <!-- Camera + USB Scanner -->
+      <div class="card mb-4">
+        <div class="card-head"><h3>Scan Employee Card</h3><span class="badge-ready" id="scannerStatus">Ready</span></div>
+        <div class="card-body">
+          <button class="btn btn-primary btn-full" id="openCameraBtn" type="button" style="margin-bottom:12px;justify-content:center;gap:8px">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="width:17px;height:17px"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            Open Camera — Scan QR / Barcode
+          </button>
+          <div class="scan-zone" id="scanZone" tabindex="0" role="textbox" aria-label="USB scanner area" style="min-height:60px;padding:12px">
+            <p style="font-size:13px;color:var(--text-muted)">Or click here for USB / Bluetooth scanner</p>
+            <input type="text" id="barcodeInput" class="barcode-hidden-input" autocomplete="off" tabindex="-1"/>
+          </div>
+        </div>
+      </div>
+
+      <!-- Manual entry -->
+      <div class="card mb-4">
+        <div class="card-head"><h3>Manual Employee Number</h3></div>
+        <div class="card-body">
+          <div class="search-row">
+            <input type="text" id="manualEmpNo" placeholder="Type employee number…" class="input-full" autocomplete="off"/>
+            <button class="btn btn-secondary" id="manualLookupBtn">Look Up</button>
+          </div>
+          <p class="hint-text mt-2">If employee is not in the list, you can add them below.</p>
+        </div>
+      </div>
+
+      <!-- Not found panel -->
+      <div class="card hidden" id="notFoundCard">
+        <div class="card-head"><h3>Employee Not Found</h3><span class="badge badge-failed">Not in List</span></div>
+        <div class="card-body">
+          <div class="not-found-banner">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:20px;height:20px;flex-shrink:0;color:var(--warning)" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <div>
+              <strong>Employee No: <span id="notFoundEmpNo"></span></strong>
+              <p style="font-size:13px;margin-top:2px">Not in system yet. Fill in name to add them and proceed with check-in.</p>
+            </div>
+          </div>
+          <div id="quickAddAlert" class="alert hidden mt-3"></div>
+          <div class="field-row mt-3">
+            <div class="field-group"><label>First Name <span class="req">*</span></label><input type="text" id="qaFirstName"/></div>
+            <div class="field-group"><label>Last Name <span class="req">*</span></label><input type="text" id="qaLastName"/></div>
+          </div>
+          <div class="field-row">
+            <div class="field-group"><label>Department</label><input type="text" id="qaDept"/></div>
+            <div class="field-group"><label>Job Title</label><input type="text" id="qaJobTitle"/></div>
+          </div>
+          <p class="hint-text" style="margin-top:6px">This employee will also appear in the IT Staff Employees list.</p>
+          <div class="btn-row mt-3">
+            <button class="btn btn-primary" id="quickAddBtn">Add &amp; Continue to Check-In</button>
+            <button class="btn btn-ghost" id="cancelNotFound">Cancel</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Confirm check-in -->
+      <div class="card hidden" id="checkinConfirmCard">
+        <div class="card-head">
+          <h3>Confirm Check-In</h3>
+          <span id="checkinNewBadge" class="badge badge-warning hidden">New Employee</span>
+        </div>
+        <div class="card-body">
+          <div class="emp-found-row" id="empFoundRow"></div>
+          <div id="duplicateWarning" class="alert alert-error hidden mt-3">
+            <strong>⚠️ Already attended this session!</strong>
+            <span id="duplicateDetail"></span>
+          </div>
+          <div class="field-row mt-3">
+            <div class="field-group">
+              <label>Score <span style="font-size:11px;color:var(--text-muted)">(optional)</span></label>
+              <input type="number" id="checkinScore" min="0" max="100" placeholder="0–100"/>
+            </div>
+            <div class="field-group">
+              <label>Result</label>
+              <select id="checkinPassed">
+                <option value="Passed" selected>Passed</option>
+                <option value="Failed">Failed</option>
+                <option value="Pending">Pending</option>
+              </select>
+            </div>
+          </div>
+          <div id="checkinAlert" class="alert hidden mt-3"></div>
+          <div class="btn-row mt-3">
+            <button class="btn btn-primary" id="confirmCheckinBtn">Confirm Check-In</button>
+            <button class="btn btn-ghost" id="cancelCheckinBtn">Cancel</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Checked-in list -->
+      <div class="card full">
+        <div class="card-head"><h3>Checked In This Session</h3><span id="checkinCount" class="badge-count">0</span></div>
+        <div id="checkinList" class="checkin-list"><p class="empty-hint">No check-ins yet.</p></div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- TOPICS -->
+  <section id="panel-topics" class="panel">
+    <div class="panel-header">
+      <div><h2>Training Topics</h2><p class="panel-sub">Add titles for trainings, seminars, and webinars. No duplicate titles allowed.</p></div>
+      <button class="btn btn-primary" id="openAddTopic">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Topic
+      </button>
+    </div>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead><tr><th>Topic ID</th><th>Title</th><th>Category</th><th>Description</th></tr></thead>
+        <tbody id="topicsBody"><tr><td colspan="4" class="table-empty">Loading…</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- LOGS -->
+  <section id="panel-logs" class="panel">
+    <div class="panel-header"><div><h2>Attendance Logs</h2><p class="panel-sub">Passed and Failed shown first. Training title displayed.</p></div></div>
+    <div class="filter-bar">
+      <input type="text" id="logSearch" placeholder="Search name, employee no, or training title…" class="input-search"/>
+      <input type="date" id="logDateFrom" class="select-sm"/>
+      <input type="date" id="logDateTo"   class="select-sm"/>
+      <button class="btn btn-ghost btn-sm" id="applyLogFilters">Apply</button>
+    </div>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead><tr><th>Log ID</th><th>Emp No</th><th>Name</th><th>Training Title</th><th>Date</th><th>Method</th><th>Result</th></tr></thead>
+        <tbody id="logsBody"><tr><td colspan="7" class="table-empty">Loading…</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+
+</main>
+
+<!-- CREATE SESSION MODAL -->
+<div class="modal-overlay hidden" id="createSessionModal" role="dialog" aria-modal="true">
+  <div class="modal">
+    <div class="modal-head"><h3>New Training Session</h3><button class="btn-icon" id="closeModal" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+    <div class="modal-body">
+      <div id="sessionFormAlert" class="alert hidden"></div>
+      <form id="createSessionForm" novalidate>
+        <div class="field-group"><label for="sTitle">Session Title <span class="req">*</span></label><input type="text" id="sTitle" placeholder="e.g. Fire Safety Fundamentals" required/></div>
+        <div class="field-group"><label for="sTopicID">Link to Topic</label><select id="sTopicID"><option value="">— no topic —</option></select></div>
+        <div class="field-row">
+          <div class="field-group"><label for="sType">Type <span class="req">*</span></label>
+            <select id="sType" required><option value="Training">Training</option><option value="Seminar">Seminar</option><option value="Webinar">Webinar</option><option value="Theoretical">Theoretical</option><option value="Practical">Practical</option></select>
+          </div>
+          <div class="field-group"><label for="sLocation">Location <span class="req">*</span></label>
+            <select id="sLocation" required><option value="Training Room">Training Room</option><option value="Field">Field</option><option value="Online">Online</option><option value="Other">Other</option></select>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field-group"><label for="sDate">Date <span class="req">*</span></label><input type="date" id="sDate" required/></div>
+          <div class="field-group"><label for="sTime">Time <span class="req">*</span></label><input type="time" id="sTime" required/></div>
+        </div>
+        <div class="field-row">
+          <div class="field-group"><label for="sDuration">Duration (mins)</label><input type="number" id="sDuration" value="60" min="15"/></div>
+          <div class="field-group"><label for="sCapacity">Max Capacity</label><input type="number" id="sCapacity" value="30" min="1"/></div>
+        </div>
+        <div class="field-group"><label for="sDesc">Description</label><textarea id="sDesc" rows="2" placeholder="Optional notes…"></textarea></div>
+        <div class="modal-footer"><button type="button" class="btn btn-ghost" id="cancelModal">Cancel</button><button type="submit" class="btn btn-primary">Create Session</button></div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ADD TOPIC MODAL -->
+<div class="modal-overlay hidden" id="addTopicModal" role="dialog" aria-modal="true">
+  <div class="modal modal-sm">
+    <div class="modal-head"><h3>Add Training Topic</h3><button class="btn-icon" id="closeAddTopic" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+    <div class="modal-body">
+      <div id="topicFormAlert" class="alert hidden"></div>
+      <form id="addTopicForm" novalidate>
+        <div class="field-group"><label>Title <span class="req">*</span></label><input type="text" id="topicTitle" placeholder="e.g. First Aid Basics" required/></div>
+        <div class="field-group"><label>Category</label>
+          <select id="topicCategory"><option value="Training">Training</option><option value="Seminar">Seminar</option><option value="Webinar">Webinar</option></select>
+        </div>
+        <div class="field-group"><label>Description</label><textarea id="topicDesc" rows="2"></textarea></div>
+        <div class="modal-footer"><button type="button" class="btn btn-ghost" id="cancelAddTopic">Cancel</button><button type="submit" class="btn btn-primary">Add Topic</button></div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- PARTICIPANTS MODAL -->
+<div class="modal-overlay hidden" id="participantsModal" role="dialog" aria-modal="true" aria-labelledby="participantsModalTitle">
+  <div class="modal" style="max-width:720px">
+    <div class="modal-head">
+      <h3 id="participantsModalTitle">Session Participants</h3>
+      <div style="display:flex;align-items:center;gap:8px">
+        <button class="btn btn-primary btn-sm" id="saveReportBtn" style="display:none">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="width:14px;height:14px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Save as PDF
+        </button>
+        <button class="btn-icon" id="closeParticipantsModal" aria-label="Close">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="modal-body" id="participantsModalBody">
+      <p style="color:var(--text-muted);padding:24px;text-align:center">Loading…</p>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+<script src="../js/config.js"></script>
+<script src="../js/api.js"></script>
+<script src="../js/utils.js"></script>
+<script src="../js/logo.js"></script>
+<script src="../js/pdf-report.js"></script>
+<script src="../js/scanner.js"></script>
+<script src="../js/trainer.js"></script>
+</body>
+</html>

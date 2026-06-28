@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>IT Staff — TrainPass</title>
+  <link rel="stylesheet" href="../css/main.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet"/>
+</head>
+<body>
+<header class="topnav">
+  <div class="topnav-inner">
+    <div class="nav-brand">
+      <svg viewBox="0 0 48 48" fill="none" aria-hidden="true"><rect x="4" y="4" width="40" height="40" rx="10" fill="var(--accent)"/><path d="M14 16h20M14 24h14M14 32h8" stroke="white" stroke-width="2.5" stroke-linecap="round"/><circle cx="36" cy="30" r="8" fill="white" fill-opacity="0.3"/><path d="M33 30l2 2 4-4" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>TrainPass</span>
+    </div>
+    <nav class="nav-tabs" role="tablist">
+      <button class="nav-tab active" data-panel="records"   role="tab">Records</button>
+      <button class="nav-tab"        data-panel="employees" role="tab">Employees</button>
+      <button class="nav-tab"        data-panel="trainers"  role="tab">Trainers</button>
+      <button class="nav-tab"        data-panel="users"     role="tab">User Logins</button>
+      <button class="nav-tab"        data-panel="topics"    role="tab">Topics</button>
+    </nav>
+    <div class="nav-user">
+      <span class="role-badge role-it">IT Staff</span>
+      <span id="navUsername" class="nav-username"></span>
+      <button class="btn-icon" id="logoutBtn" title="Sign out" aria-label="Sign out">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="dashboard-main">
+
+  <!-- RECORDS -->
+  <section id="panel-records" class="panel active">
+    <div class="panel-header"><div><h2>Training Records</h2><p class="panel-sub">Training title shown. Delete incorrect entries with a reason.</p></div></div>
+    <div class="filter-bar">
+      <input type="text" id="recordSearch" placeholder="Search name, employee no, or training title…" class="input-search"/>
+      <select id="recordResult" class="select-sm">
+        <option value="">All results</option>
+        <option value="Passed">Passed</option>
+        <option value="Failed">Failed</option>
+        <option value="Pending">Pending</option>
+      </select>
+      <input type="date" id="recordDateFrom" class="select-sm"/>
+      <input type="date" id="recordDateTo"   class="select-sm"/>
+      <button class="btn btn-ghost btn-sm" id="applyRecordFilters">Apply</button>
+    </div>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead><tr><th>Log ID</th><th>Emp No</th><th>Name</th><th>Training Title</th><th>Date</th><th>Method</th><th>Result</th><th>Action</th></tr></thead>
+        <tbody id="recordsBody"><tr><td colspan="8" class="table-empty">Loading…</td></tr></tbody>
+      </table>
+    </div>
+    <div class="table-pagination" id="recordsPagination"></div>
+  </section>
+
+  <!-- EMPLOYEES -->
+  <section id="panel-employees" class="panel">
+    <div class="panel-header">
+      <div><h2>Employees</h2><p class="panel-sub">Employee number = barcode / ID card number.</p></div>
+      <button class="btn btn-primary" id="openAddEmployee">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Employee
+      </button>
+    </div>
+    <div class="filter-bar">
+      <input type="text" id="employeeSearch" placeholder="Search name, employee no, or department…" class="input-search"/>
+      <button class="btn btn-ghost btn-sm" id="applyEmployeeFilter">Search</button>
+    </div>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead><tr><th>Employee No</th><th>Name</th><th>Department</th><th>Job Title</th><th>Email</th><th>Status / Edit</th></tr></thead>
+        <tbody id="employeeBody"><tr><td colspan="6" class="table-empty">Loading…</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- TRAINERS (read-only) -->
+  <section id="panel-trainers" class="panel">
+    <div class="panel-header">
+      <div><h2>Trainers</h2><p class="panel-sub">Trainers are added via <strong>User Logins</strong> tab — select Role = Trainer when creating a user.</p></div>
+    </div>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead><tr><th>Employee No</th><th>Name</th><th>Department</th><th>Specialisation</th><th>Status</th></tr></thead>
+        <tbody id="trainerBody"><tr><td colspan="5" class="table-empty">Loading…</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- USER LOGINS (MERGED) -->
+  <section id="panel-users" class="panel">
+    <div class="panel-header">
+      <div><h2>User Logins</h2><p class="panel-sub">Adding a <strong>Trainer</strong> here auto-creates their Employee and Trainer records. No duplicates allowed.</p></div>
+      <button class="btn btn-primary" id="openAddUser">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add User
+      </button>
+    </div>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead><tr><th>Username</th><th>Role</th><th>Employee No</th><th>Email</th><th>Status</th><th>Last Login / Edit</th></tr></thead>
+        <tbody id="userBody"><tr><td colspan="6" class="table-empty">Loading…</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- TOPICS -->
+  <section id="panel-topics" class="panel">
+    <div class="panel-header">
+      <div><h2>Training Topics</h2><p class="panel-sub">Shows completed and pending sessions per topic. No duplicates allowed.</p></div>
+    </div>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead><tr><th>Topic ID</th><th>Title / Category</th><th>Department</th><th>Trainer Name</th><th>Sessions / Action</th></tr></thead>
+        <tbody id="topicsBody"><tr><td colspan="5" class="table-empty">Loading…</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+
+</main>
+
+<!-- DELETE LOG MODAL -->
+<div class="modal-overlay hidden" id="deleteModal" role="dialog" aria-modal="true">
+  <div class="modal modal-sm">
+    <div class="modal-head"><h3>Delete Log Entry</h3><button class="btn-icon" id="closeDeleteModal" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+    <div class="modal-body">
+      <div class="delete-warning">
+        <svg class="warning-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <div><p style="font-size:12px;color:var(--text-muted)">Deleting log:</p><p class="delete-logid" id="deleteLogIDDisplay"></p><p class="delete-desc">Soft-deleted — preserved for audit but hidden from all views.</p></div>
+      </div>
+      <div class="field-group mt-3"><label>Reason <span class="req">*</span></label><textarea id="deleteReason" rows="3" placeholder="Why is this entry incorrect?"></textarea></div>
+      <div id="deleteFormAlert" class="alert hidden mt-2"></div>
+      <div class="modal-footer"><button class="btn btn-ghost" id="cancelDelete">Cancel</button><button class="btn btn-danger" id="confirmDeleteBtn">Delete</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- DELETE TOPIC MODAL -->
+<div class="modal-overlay hidden" id="deleteTopicModal" role="dialog" aria-modal="true">
+  <div class="modal modal-sm">
+    <div class="modal-head"><h3>Delete Topic</h3><button class="btn-icon" id="closeDeleteTopicModal" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+    <div class="modal-body">
+      <div class="delete-warning">
+        <svg class="warning-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <div>
+          <p style="font-size:13px;color:var(--text-secondary)">You are about to delete topic:</p>
+          <p id="deleteTopicName" style="font-weight:700;color:var(--danger);font-size:15px;margin-top:4px"></p>
+          <p class="delete-desc">Topic will be deactivated. Existing sessions under this topic are not affected.</p>
+        </div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-ghost" id="cancelDeleteTopic">Cancel</button><button class="btn btn-danger" id="confirmDeleteTopicBtn">Delete Topic</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD / EDIT EMPLOYEE MODAL -->
+<div class="modal-overlay hidden" id="addEmployeeModal" role="dialog" aria-modal="true">
+  <div class="modal">
+    <div class="modal-head"><h3 id="empModalTitle">Add Employee</h3><button class="btn-icon" id="closeAddEmployee" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+    <div class="modal-body">
+      <div id="empFormAlert" class="alert hidden"></div>
+      <form id="addEmployeeForm" novalidate>
+        <div class="field-group"><label>Employee No <span class="req">*</span></label><input type="text" id="eNo" placeholder="e.g. EMP-001 or 10042"/></div>
+        <div class="field-row">
+          <div class="field-group"><label>First Name <span class="req">*</span></label><input type="text" id="eFirst"/></div>
+          <div class="field-group"><label>Last Name <span class="req">*</span></label><input type="text" id="eLast"/></div>
+        </div>
+        <div class="field-group"><label>Email</label><input type="email" id="eEmail"/></div>
+        <div class="field-row">
+          <div class="field-group"><label>Department</label><input type="text" id="eDept"/></div>
+          <div class="field-group"><label>Job Title</label><input type="text" id="eJob"/></div>
+        </div>
+        <div class="field-group"><label>Notes</label><textarea id="eNotes" rows="2"></textarea></div>
+        <div class="modal-footer"><button type="button" class="btn btn-ghost" id="cancelAddEmployee">Cancel</button><button type="submit" class="btn btn-primary">Save</button></div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ADD / EDIT USER LOGIN (MERGED) -->
+<div class="modal-overlay hidden" id="addUserModal" role="dialog" aria-modal="true">
+  <div class="modal" style="max-width:620px">
+    <div class="modal-head"><h3 id="userModalTitle">Add User</h3><button class="btn-icon" id="closeAddUser" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+    <div class="modal-body">
+      <div id="userFormAlert" class="alert hidden"></div>
+      <form id="addUserForm" novalidate>
+
+        <span class="form-section-label">Login Credentials</span>
+        <div class="field-row">
+          <div class="field-group"><label>Username <span class="req">*</span></label><input type="text" id="uUsername" autocomplete="off"/></div>
+          <div class="field-group">
+            <label>Password <span class="req">*</span></label>
+            <input type="password" id="uPassword" placeholder="Password" autocomplete="new-password"/>
+            <small id="uPasswordHint" class="hidden" style="color:var(--text-muted);font-size:12px;margin-top:3px">Leave blank to keep current password</small>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field-group"><label>Role <span class="req">*</span></label>
+            <select id="uRole"><option value="Trainer">Trainer</option><option value="ITStaff">IT Staff</option></select>
+          </div>
+          <div class="field-group"><label>Status</label>
+            <select id="uActive"><option value="true">Active</option><option value="false">Inactive</option></select>
+          </div>
+        </div>
+
+        <span class="form-section-label" style="margin-top:14px;display:block">Personal Information</span>
+        <div class="field-row">
+          <div class="field-group"><label>First Name <span class="req">*</span></label><input type="text" id="uFirstName"/></div>
+          <div class="field-group"><label>Last Name <span class="req">*</span></label><input type="text" id="uLastName"/></div>
+        </div>
+        <div class="field-row">
+          <div class="field-group"><label>Employee No <span class="req">*</span></label><input type="text" id="uEmpNo" placeholder="Unique employee number"/></div>
+          <div class="field-group"><label>Email</label><input type="email" id="uEmail"/></div>
+        </div>
+        <div class="field-row">
+          <div class="field-group"><label>Department</label><input type="text" id="uDept"/></div>
+          <div class="field-group"><label>Job Title</label><input type="text" id="uJobTitle"/></div>
+        </div>
+
+        <!-- Trainer-only fields -->
+        <div id="trainerFieldsSection">
+          <span class="form-section-label" style="margin-top:14px;display:block">
+            Trainer Details
+            <span style="font-size:11px;color:#5b21b6;font-weight:400;margin-left:6px">shown because Role = Trainer</span>
+          </span>
+          <div class="field-group"><label>Specialisation</label><input type="text" id="uSpec" placeholder="e.g. Fire Safety, First Aid"/></div>
+          <p class="hint-text">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px;display:inline;vertical-align:middle" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+            This user will also be added to <strong>Trainers</strong> and <strong>Employees</strong> lists automatically.
+          </p>
+        </div>
+
+        <div class="modal-footer"><button type="button" class="btn btn-ghost" id="cancelAddUser">Cancel</button><button type="submit" class="btn btn-primary">Save</button></div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer" aria-live="polite"></div>
+<script src="../js/config.js"></script>
+<script src="../js/api.js"></script>
+<script src="../js/utils.js"></script>
+<script src="../js/itstaff.js"></script>
+</body>
+</html>

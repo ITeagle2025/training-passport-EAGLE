@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>EAGLE-ADPHC Training Passport</title>
+  <link rel="stylesheet" href="css/main.css"/>
+  <link rel="stylesheet" href="css/public.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+  <style>
+    /* Merged search card */
+    .search-unified{padding:24px;}
+    .search-divider{display:flex;align-items:center;gap:12px;margin:18px 0;color:var(--text-muted);font-size:12px;font-weight:500;}
+    .search-divider::before,.search-divider::after{content:"";flex:1;height:1px;background:var(--border);}
+    /* Searching overlay */
+    .search-progress{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--accent-light,#eff6ff);border-radius:var(--radius-sm);border:1.5px solid var(--accent);margin-top:12px;font-size:13.5px;color:var(--accent);font-weight:500;}
+    .search-progress svg{animation:spin 1s linear infinite;flex-shrink:0;width:18px;height:18px;}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    /* Refresh button row */
+    .refresh-row{display:flex;align-items:center;gap:10px;margin-bottom:18px;}
+    .refresh-row .refresh-label{font-size:13px;color:var(--text-secondary);}
+    /* Header logo */
+    .header-logo-img{height:36px;width:auto;object-fit:contain;}
+    .header-logo-svg{width:36px;height:36px;}
+    .nav-brand-text{display:flex;flex-direction:column;line-height:1.1;}
+    .nav-brand-text .brand-main{font-family:var(--font-display,inherit);font-weight:700;font-size:15px;color:var(--text);}
+    .nav-brand-text .brand-sub{font-size:10.5px;color:var(--text-muted);font-weight:400;}
+    /* Scan popup alert */
+    .scan-alert-overlay{position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;}
+    .scan-alert-bg{position:absolute;inset:0;background:rgba(15,23,42,.5);backdrop-filter:blur(2px);}
+    .scan-alert-box{position:relative;z-index:1;background:var(--surface);border-radius:var(--radius-lg);padding:28px 32px;max-width:380px;width:90vw;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.2);}
+    .scan-alert-icon{width:48px;height:48px;border-radius:50%;background:#fef2f2;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;}
+    .scan-alert-icon svg{width:24px;height:24px;color:#dc2626;}
+    .scan-alert-title{font-family:var(--font-display,inherit);font-size:1.1rem;font-weight:700;margin-bottom:8px;}
+    .scan-alert-msg{font-size:14px;color:var(--text-secondary);margin-bottom:20px;}
+    .scan-alert-btn{width:100%;}
+  </style>
+</head>
+<body class="public-page">
+
+<header class="public-header">
+  <div class="public-header-inner">
+    <div class="nav-brand">
+      <!-- ADPHC Logo: shows image if available, falls back to SVG icon -->
+      <img id="headerLogoImg" src="ADPHC_NEW_LOGO.png" alt="ADPHC Logo"
+           class="header-logo-img"
+           onerror="this.style.display='none';document.getElementById('headerLogoSvg').style.display='flex'"/>
+      <svg id="headerLogoSvg" viewBox="0 0 48 48" fill="none" aria-hidden="true"
+           class="header-logo-svg" style="display:none">
+        <rect x="4" y="4" width="40" height="40" rx="10" fill="var(--accent)"/>
+        <path d="M14 16h20M14 24h14M14 32h8" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+        <circle cx="36" cy="30" r="8" fill="white" fill-opacity="0.3"/>
+        <path d="M33 30l2 2 4-4" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <div class="nav-brand-text">
+        <span class="brand-main">EAGLE-ADPHC</span>
+        <span class="brand-sub">Training Passport</span>
+      </div>
+    </div>
+    <button class="btn btn-ghost btn-sm" id="adminAccessBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:15px;height:15px"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      Admin / Trainer Login
+    </button>
+  </div>
+</header>
+
+<main class="public-main">
+  <div class="public-hero">
+    <h1>Check Your Training Records</h1>
+    <p>Enter your employee number or scan your ID card to view your attended trainings.</p>
+  </div>
+
+  <!-- Unified Search Card -->
+  <div class="public-search-card" id="searchCard">
+
+    <!-- Refresh row (hidden until after first search) -->
+    <div id="refreshRow" class="hidden" style="padding:16px 24px 0">
+      <div class="refresh-row">
+        <button class="btn btn-ghost btn-sm" id="refreshBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:14px;height:14px"><path d="M1 4v6h6"/><path d="M23 20v-6h-6"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
+          New Search
+        </button>
+        <span class="refresh-label">Showing results for <strong id="currentEmpLabel"></strong></span>
+      </div>
+    </div>
+
+    <!-- Unified search area (hidden after search) -->
+    <div id="searchArea" class="search-unified">
+      <div id="publicAlert" class="alert alert-error hidden" role="alert"></div>
+
+      <!-- Type input -->
+      <div class="public-input-row">
+        <input type="text" id="empNoInput" placeholder="Enter your Employee Number / ID"
+               class="public-input" autocomplete="off" inputmode="text" aria-label="Employee number"/>
+        <button class="btn btn-primary" id="searchBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true" style="width:15px;height:15px"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          Search
+        </button>
+      </div>
+      <p class="search-hint">Enter your Employee Number / ID</p>
+
+      <!-- Searching progress (shown during lookup) -->
+      <div id="searchProgress" class="search-progress hidden">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+        </svg>
+        Searching training records…
+      </div>
+
+      <div class="search-divider">or scan ID card</div>
+
+      <!-- Camera scan button -->
+      <button class="btn btn-secondary btn-full" id="openPublicCameraBtn" type="button"
+              style="padding:14px;font-size:14px;justify-content:center;gap:10px;border-radius:10px;margin-bottom:14px">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="width:20px;height:20px"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        Open Camera — Scan QR or Barcode
+      </button>
+
+      <!-- USB fallback -->
+      <div style="border-top:1px solid var(--border);padding-top:14px">
+        <p style="font-size:12px;color:var(--text-muted);margin-bottom:8px;text-align:center">Or use a USB / Bluetooth barcode scanner:</p>
+        <div class="scan-zone" id="publicScanZone" tabindex="0" role="textbox" aria-label="USB scanner area" style="min-height:60px;padding:12px">
+          <p id="scanStatus" style="font-size:13px;color:var(--text-muted)">Click here, then scan with USB scanner</p>
+          <input type="text" id="publicBarcodeInput" class="barcode-hidden-input" autocomplete="off" aria-hidden="true" tabindex="-1"/>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Results -->
+  <div id="resultsSection" class="hidden">
+    <div class="emp-banner" id="empBanner"></div>
+    <div id="publicStats"></div>
+
+    <div class="records-header">
+      <h3 id="recordsTitle">Training Records</h3>
+      <div class="record-filters">
+        <select id="filterType" class="select-sm">
+          <option value="">All types</option>
+          <option value="Training">Training</option>
+          <option value="Seminar">Seminar</option>
+          <option value="Webinar">Webinar</option>
+          <option value="Theoretical">Theoretical</option>
+          <option value="Practical">Practical</option>
+        </select>
+        <select id="filterResult" class="select-sm">
+          <option value="">All results</option>
+          <option value="Passed">Passed</option>
+          <option value="Failed">Failed</option>
+          <option value="Pending">Pending</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="trainingList" class="training-list"></div>
+    <div id="noRecords" class="no-records hidden">
+      <svg viewBox="0 0 64 64" fill="none" aria-hidden="true">
+        <circle cx="32" cy="32" r="28" fill="var(--surface-2)"/>
+        <path d="M20 28h24M20 36h16M20 44h10" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <p>No training records found matching your filter.</p>
+    </div>
+  </div>
+</main>
+
+<!-- Scan Failed Alert Popup -->
+<div id="scanFailedOverlay" class="scan-alert-overlay hidden">
+  <div class="scan-alert-bg" id="scanFailedBg"></div>
+  <div class="scan-alert-box">
+    <div class="scan-alert-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+    </div>
+    <div class="scan-alert-title">Employee Not Found</div>
+    <div class="scan-alert-msg" id="scanFailedMsg">No record found for the scanned ID. Please check your employee number and try again.</div>
+    <button class="btn btn-primary scan-alert-btn" id="scanFailedClose">OK</button>
+  </div>
+</div>
+
+<!-- Admin Login Modal -->
+<div class="modal-overlay hidden" id="loginModal" role="dialog" aria-modal="true" aria-labelledby="loginModalTitle">
+  <div class="modal modal-sm">
+    <div class="modal-head">
+      <h3 id="loginModalTitle">Admin / Trainer Login</h3>
+      <button class="btn-icon" id="closeLoginModal" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div id="loginAlert" class="alert alert-error hidden" role="alert"></div>
+      <form id="loginForm" novalidate>
+        <div class="field-group">
+          <label for="username">Username</label>
+          <input type="text" id="username" autocomplete="username" placeholder="Enter username" required/>
+        </div>
+        <div class="field-group">
+          <label for="password">Password</label>
+          <div class="input-eye">
+            <input type="password" id="password" autocomplete="current-password" placeholder="••••••••" required/>
+            <button type="button" class="eye-toggle" id="eyeToggle" aria-label="Show password">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-full mt-3" id="loginBtn">
+          <span class="btn-text">Sign In</span>
+          <span class="btn-spinner hidden" aria-hidden="true"></span>
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+<script src="js/config.js"></script>
+<script src="js/api.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/scanner.js"></script>
+<script src="js/public.js"></script>
+</body>
+</html>

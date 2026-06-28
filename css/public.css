@@ -1,0 +1,58 @@
+/* TrainPass v2.3 — public.css */
+.public-page{background:var(--bg);min-height:100vh;}
+.public-header{background:var(--surface);border-bottom:1px solid var(--border);box-shadow:var(--shadow-sm);position:sticky;top:0;z-index:100;}
+.public-header-inner{max-width:860px;margin:0 auto;padding:0 24px;height:58px;display:flex;align-items:center;justify-content:space-between;}
+.public-main{max-width:860px;margin:0 auto;padding:40px 24px 60px;}
+.public-hero{text-align:center;margin-bottom:32px;}
+.public-hero h1{font-size:clamp(1.5rem,3vw,2.2rem);margin-bottom:10px;}
+.public-hero p{font-size:1rem;color:var(--text-secondary);}
+.public-search-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow);overflow:hidden;margin-bottom:32px;}
+.search-tabs{display:flex;border-bottom:1px solid var(--border);background:var(--surface-2);}
+.search-tab{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:14px;font-size:14px;font-weight:500;color:var(--text-secondary);border-bottom:3px solid transparent;transition:all var(--t);cursor:pointer;}
+.search-tab svg{width:17px;height:17px;}
+.search-tab:hover{color:var(--text);background:var(--surface);}
+.search-tab.active{color:var(--accent);border-bottom-color:var(--accent);background:var(--surface);font-weight:600;}
+.search-mode{display:none;padding:24px;}
+.search-mode.active{display:block;}
+.public-input-row{display:flex;gap:10px;}
+.public-input{flex:1;padding:11px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:15px;transition:border-color var(--t),box-shadow var(--t);}
+.public-input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-light);}
+.search-hint{font-size:12.5px;color:var(--text-muted);margin-top:8px;}
+/* Employee banner */
+.emp-banner{display:flex;align-items:center;gap:16px;background:var(--accent);color:#fff;border-radius:var(--radius);padding:18px 22px;margin-bottom:20px;box-shadow:var(--shadow);}
+.emp-banner-avatar{width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,.2);font-size:20px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.emp-banner-name{font-family:var(--font-display);font-size:1.2rem;font-weight:700;}
+.emp-banner-meta{font-size:13px;opacity:.85;margin-top:2px;}
+.emp-banner-no{font-size:12px;opacity:.7;margin-top:2px;font-family:monospace;}
+/* Stats — 5 cols */
+.public-stats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:24px;}
+.pub-stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow-sm);text-align:center;}
+.pub-stat-num{font-family:var(--font-display);font-size:1.8rem;font-weight:700;color:var(--accent);line-height:1;}
+.pub-stat-label{font-size:11.5px;color:var(--text-muted);font-weight:500;margin-top:4px;}
+/* Records */
+.records-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;flex-wrap:wrap;}
+.records-header h3{font-size:1.05rem;}
+.record-filters{display:flex;gap:8px;flex-wrap:wrap;}
+.training-list{display:flex;flex-direction:column;gap:10px;}
+.training-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;display:grid;grid-template-columns:1fr auto;align-items:center;gap:12px;box-shadow:var(--shadow-sm);transition:box-shadow var(--t),border-color var(--t);}
+.training-card:hover{box-shadow:var(--shadow);border-color:var(--border-strong);}
+.training-title{font-family:var(--font-display);font-weight:600;font-size:.95rem;color:var(--text);margin-bottom:6px;}
+.training-meta{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:12.5px;color:var(--text-muted);}
+.training-meta svg{width:13px;height:13px;}
+.training-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px;}
+.training-score{font-size:12px;color:var(--text-muted);font-weight:500;}
+.training-cert{font-size:11.5px;color:var(--success);font-weight:600;}
+.no-records{display:flex;flex-direction:column;align-items:center;gap:12px;padding:48px 24px;text-align:center;}
+.no-records svg{width:64px;height:64px;}
+.no-records p{color:var(--text-muted);font-size:14px;}
+/* Login modal */
+.input-eye{position:relative;}
+.input-eye input{padding-right:44px;}
+.eye-toggle{position:absolute;right:10px;top:50%;transform:translateY(-50%);color:var(--text-muted);display:flex;align-items:center;padding:4px;border-radius:4px;}
+.eye-toggle:hover{color:var(--text);}
+.eye-toggle svg{width:18px;height:18px;}
+@media(max-width:640px){
+  .public-stats{grid-template-columns:repeat(3,1fr);}
+  .training-card{grid-template-columns:1fr;}
+  .training-right{flex-direction:row;align-items:center;}
+}
